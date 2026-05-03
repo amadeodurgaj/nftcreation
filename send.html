@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Send ERC20 Tokens</title>
+</head>
+<body>
+
+  <h2>Send 10 Tokens</h2>
+  <button onclick="sendTokens()">Send 10 Tokens</button>
+  <p id="status">Click the button</p>
+
+  <!-- ethers.js v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x7E3FFCE184bfC60061170c351B8eE704bD96f8db";
+    const RECEIVER = "0x15433DA387451F9dE4565280C85506CB71aF9376";
+
+    // Minimal ERC20 ABI
+    const ABI = [
+      "function transfer(address to, uint256 amount) returns (bool)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    async function sendTokens() {
+      if (!window.ethereum) {
+        alert("MetaMask not installed!");
+        return;
+      }
+
+      try {
+        document.getElementById("status").innerText = "Connecting...";
+
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+        const decimals = await contract.decimals();
+
+        const amount = ethers.parseUnits("10", decimals);
+
+        document.getElementById("status").innerText = "Sending transaction...";
+
+        const tx = await contract.transfer(RECEIVER, amount);
+
+        document.getElementById("status").innerText =
+          "Transaction sent: " + tx.hash;
+
+        await tx.wait();
+
+        document.getElementById("status").innerText =
+          "Confirmed! Tx Hash: " + tx.hash;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").innerText =
+          "Error: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>

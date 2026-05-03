@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERC20 Balance Checker (Sepolia)</title>
+</head>
+<body>
+
+  <h2>Check My ERC20 Balance</h2>
+  <button onclick="getBalance()">Get My Token Balance</button>
+  <p id="output">Click the button</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x373cbd48f808b65dB576313F531676608291d559";
+
+    const ABI = [
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    async function getBalance() {
+      if (!window.ethereum) {
+        alert("MetaMask not installed!");
+        return;
+      }
+
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const userAddress = await signer.getAddress();
+
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+
+        const rawBalance = await contract.balanceOf(userAddress);
+        const decimals = await contract.decimals();
+
+        const formatted = ethers.formatUnits(rawBalance, decimals);
+
+        document.getElementById("output").innerText =
+          "Address: " + userAddress + "\nBalance: " + formatted;
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("output").innerText = "Error fetching balance";
+      }
+    }
+  </script>
+
+</body>
+</html>
