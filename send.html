@@ -41,7 +41,7 @@
 
         const decimals = await contract.decimals();
 
-        const amount = ethers.parseUnits("10", decimals);
+        const amount = ethers.parseUnits("10", 18);
 
         document.getElementById("status").innerText = "Sending transaction...";
 
